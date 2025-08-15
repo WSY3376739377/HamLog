@@ -2,6 +2,9 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import webbrowser
+import os
+import shutil
+import time
 
 # 导入我们已经解耦的后端模块
 from modules.database import init_db, add_qso, delete_qso, update_qso_cell, query_qso, add_qso_batch
@@ -408,7 +411,6 @@ class HamLogApp:
             messagebox.showerror('导出失败', f'发生错误: {e}')
 
     def backup_db(self):
-        import shutil, time
         from tkinter import filedialog
         source_db = 'hamlog.db'
         if not os.path.exists(source_db):
@@ -424,7 +426,6 @@ class HamLogApp:
             messagebox.showerror('备份失败', f'发生错误: {e}')
 
     def restore_db(self):
-        import shutil, os
         from tkinter import filedialog
         if not messagebox.askyesno("确认恢复", '警告：此操作将用备份文件覆盖当前数据库。\n所有未备份的数据都将丢失！\n\n您确定要继续吗？'):
             return
