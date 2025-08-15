@@ -1,0 +1,44 @@
+name: Build HamLog Executable
+
+# 当在GitHub上发布新版本时触发此流程
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    # 在最新的Windows虚拟机上运行
+    runs-on: windows-latest
+
+    steps:
+    # 第一步：下载您的代码到虚拟机
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # 第二步：设置Python环境
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    # 第三步：安装项目依赖和打包工具
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+
+    # 第四步：使用PyInstaller打包成exe
+    - name: Build executable with PyInstaller
+      run: |
+        pyinstaller --name HamLog --onefile --windowed --icon=NONE --hidden-import "matplotlib.backends.backend_tkagg" main.py
+
+    # 第五步：将打包好的exe上传到Release页面
+    - name: Upload executable to Release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: dist/HamLog.exe
+        asset_name: HamLog-windows.exe
+        tag: ${{ github.ref }}
+        overwrite: true
