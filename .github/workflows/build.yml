@@ -28,10 +28,10 @@ jobs:
         pip install -r requirements.txt
         pip install pyinstaller
 
-    # 第四步：使用PyInstaller打包成exe
+    # 第四步：使用PyInstaller打包成exe (移除 --windowed 以便调试)
     - name: Build executable with PyInstaller
       run: |
-        pyinstaller --name HamLog --onefile --windowed --icon=NONE --hidden-import "matplotlib.backends.backend_tkagg" main.py
+        pyinstaller --name HamLog --onefile --icon=NONE --hidden-import "matplotlib.backends.backend_tkagg" main.py
 
     # 第五步：将打包好的exe上传到Release页面
     - name: Upload executable to Release
