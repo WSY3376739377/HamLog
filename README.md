@@ -17,11 +17,12 @@ HamLog 是一款为业余无线电爱好者设计的桌面日志软件，使用 
 ## 🚀 如何运行
 
 1.  **安装依赖库**:
-    本程序依赖以下 Python 库。请使用 pip 进行安装：
+    本程序使用 Python 内置的 `tkinter` 构建界面，无需安装额外的界面库。
+    仅“统计”面板的图表功能依赖 `matplotlib`，您可以按需安装：
     ```bash
-    pip install pysimplegui matplotlib
+    pip install matplotlib
     ```
-    *注：`matplotlib` 是可选的，用于支持“统计”面板的图表功能。如果未安装，程序仍可运行，但统计图表将无法显示。*
+    *注：如果未安装 `matplotlib`，程序仍可正常运行，只是统计图表无法显示。*
 
 2.  **运行程序**:
     直接运行主程序文件：

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import sqlite3
-import PySimpleGUI as sg
 from modules.helpers import now_str
 
 DB_FILE = 'hamlog.db'
@@ -20,10 +19,9 @@ def init_db():
     conn.close()
 
 def add_qso(values):
-    """添加一条QSO记录"""
-    if not values['call']:
-        sg.popup('请填写对方呼号！')
-        return False
+    """添加一条QSO记录。成功返回True，失败则引发异常。"""
+    if not values.get('call'):
+        raise ValueError("对方呼号不能为空")
     conn = sqlite3.connect(DB_FILE)
     sql = '''INSERT INTO qso(call, mode, freq, power, datetime,
                              qth_prov, qth_city, rst_sent, rst_recv,
@@ -31,17 +29,17 @@ def add_qso(values):
              VALUES(?,?,?,?,?,?,?,?,?,?,?,?)'''
     try:
         conn.execute(sql, (
-            values['call'].upper(), values['mode'].upper(), values['freq'],
-            values['power'], values['datetime'],
-            values['qth_prov'].upper(), values['qth_city'].upper(),
-            values['rst_sent'].upper(), values['rst_recv'].upper(),
-            values['content'], values['device'].upper(), now_str()
+            values.get('call', '').upper(), values.get('mode', '').upper(), values.get('freq'),
+            values.get('power'), values.get('datetime'),
+            values.get('qth_prov', '').upper(), values.get('qth_city', '').upper(),
+            values.get('rst_sent', '').upper(), values.get('rst_recv', '').upper(),
+            values.get('content'), values.get('device', '').upper(), now_str()
         ))
         conn.commit()
         return True
-    except Exception as e:
-        sg.popup(f'保存失败: {e}')
-        return False
+    except sqlite3.Error as e:
+        conn.rollback()
+        raise e # 将异常传递给调用者
     finally:
         conn.close()
 
@@ -53,8 +51,9 @@ def delete_qso(rowid):
     conn.close()
 
 def update_qso_cell(rowid, col, new_val):
-    """更新QSO记录的单个字段"""
+    """更新QSO记录的单个字段。成功返回True，失败则引发异常。"""
     conn = sqlite3.connect(DB_FILE)
+    # 注意：这里的列名是UI传递过来的中文名，之后在UI层需要确保一致性
     col_map = {
         '呼号': 'call', '模式': 'mode', '频率': 'freq', '功率': 'power',
         '时间': 'datetime', 'QTH（省）': 'qth_prov', 'QTH（市）': 'qth_city',
@@ -62,15 +61,20 @@ def update_qso_cell(rowid, col, new_val):
     }
     db_col = col_map.get(col)
     if not db_col:
-        sg.popup(f'无效的列名: {col}')
-        return
+        raise ValueError(f"无效的列名: {col}")
 
     if db_col in ('call', 'mode', 'qth_prov', 'qth_city', 'rst_sent', 'rst_recv', 'device'):
         new_val = new_val.upper()
     
-    conn.execute(f'UPDATE qso SET {db_col}=? WHERE id=?', (new_val, rowid))
-    conn.commit()
-    conn.close()
+    try:
+        conn.execute(f'UPDATE qso SET {db_col}=? WHERE id=?', (new_val, rowid))
+        conn.commit()
+        return True
+    except sqlite3.Error as e:
+        conn.rollback()
+        raise e
+    finally:
+        conn.close()
 
 def query_qso(keyword="", by='call'):
     """
@@ -113,13 +117,11 @@ def add_qso_batch(records):
              VALUES(?,?,?,?,?,?,?,?,?,?,?,?)'''
     try:
         cur = conn.cursor()
-        # 我们假设导入的数据都是可信的，不在此处做过多校验
         cur.executemany(sql, records)
         conn.commit()
         return cur.rowcount
     except sqlite3.Error as e:
-        sg.popup_error(f"数据库批量插入失败: {e}")
         conn.rollback()
-        return 0
+        raise e # 将异常传递给调用者
     finally:
         conn.close()
