@@ -31,7 +31,7 @@ jobs:
     # 第四步：使用PyInstaller打包成exe
     - name: Build executable with PyInstaller
       run: |
-        pyinstaller --name HamLog --onefile --windowed --icon=NONE main.py
+        pyinstaller --name HamLog --onefile --windowed --icon=NONE --hidden-import "matplotlib.backends.backend_tkagg" main.py
 
     # 第五步：将打包好的exe上传到Release页面
     - name: Upload executable to Release
