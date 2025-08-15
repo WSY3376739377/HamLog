@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import sqlite3
-from modules.helpers import now_str
+from modules.helpers import now_str, get_resource_path
 
-DB_FILE = 'hamlog.db'
+DB_FILE = get_resource_path('hamlog.db')
 
 def init_db():
     """初始化数据库，创建 qso 表"""

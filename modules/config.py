@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import os
 import json
+from modules.helpers import get_resource_path
 
-CONFIG_FILE = 'config.json'
+CONFIG_FILE = get_resource_path('config.json')
 
 def load_config():
     """
